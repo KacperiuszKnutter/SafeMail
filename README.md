@@ -57,8 +57,7 @@ Projekt wymaga certyfikatów SSL do działania Nginx (HTTPS). Należy je wygener
 
 Dla środowiska deweloperskiego (localhost) użyj polecenia OpenSSL (dostępne w Git Bash lub Linux):
 
-```bash
-openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout nginx/certs/server.key -out nginx/certs/server.crt
+bash openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout nginx/certs/server.key -out nginx/certs/server.crt
 
 Opis składni:
 
@@ -73,6 +72,7 @@ req -x509: Tworzy certyfikat z podpisem własnym (self-signed).
 -keyout ...: Ścieżka zapisu klucza prywatnego.
 
 -out ...: Ścieżka zapisu certyfikatu publicznego.
+
 
 ### 2. Konfiguracja `.env`
 Utwórz plik `.env` w głównym katalogu projektu i uzupełnij go wg schematu z pliku .env.example
