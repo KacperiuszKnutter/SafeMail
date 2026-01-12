@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="columns is-centered">
+    <div class="column is-5-tablet is-4-desktop">
+        <h3 class="title has-text-centered">Weryfikacja 2FA</h3>
+        <div class="box">
+            <div class="has-text-centered mb-4">
+                <span class="icon is-large has-text-primary">
+                    <i class="fas fa-mobile-alt fa-3x"></i>
+                </span>
+            </div>
+            <p class="has-text-centered mb-4">Podaj 6-cyfrowy kod z aplikacji Authenticator.</p>
+
+            <form method="POST" action="{{ url_for('auth.login_2fa') }}">
+                {{ form.hidden_tag() }}
+
+                <div class="field">
+                    <label class="label is-sr-only" for="{{ form.otp_token.id }}">Kod OTP</label>
+                    <div class="control has-icons-left">
+                        {{ form.otp_token(class="input is-large has-text-centered", placeholder="000 000", maxlength="6", autocomplete="one-time-code", id=form.otp_token.id) }}
+                        <span class="icon is-small is-left"><i class="fas fa-key"></i></span>
+                    </div>
+                    {% for error in form.otp_token.errors %}
+                        <p class="help is-danger">{{ error }}</p>
+                    {% endfor %}
+                </div>
+
+                <button class="button is-primary is-fullwidth is-large mt-4">Zweryfikuj</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

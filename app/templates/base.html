@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SecureMail - Safe & Encrypted</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.3/css/bulma.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <style>
+        /* Modernistyczny Dark Mode dla SecureMail */
+        body, html { background-color: #121212; color: #e0e0e0; height: 100%; }
+        .navbar { background-color: #1f1f1f; border-bottom: 1px solid #333; }
+        .navbar-item, .navbar-link { color: #e0e0e0; }
+        .navbar-item:hover { background-color: #333 !important; color: #48c774 !important; }
+        
+        .box {
+            background-color: #1f1f1f;
+            border: 1px solid #333;
+            box-shadow: 0 0 15px rgba(0,0,0,0.5);
+            color: #fff;
+        }
+        .title { color: #fff; }
+        .label { color: #b5b5b5; }
+        
+        /* Pola input */
+        .input {
+            background-color: #2c2c2c;
+            border-color: #444;
+            color: #fff;
+        }
+        .input:focus { border-color: #48c774; box-shadow: 0 0 5px rgba(72, 199, 116, 0.5); }
+        .input::placeholder { color: #666; }
+
+        /* Przycisk */
+        .button.is-primary {
+            background-color: #48c774; /* Secure Green */
+            border-color: transparent;
+            color: #fff;
+            transition: all 0.3s ease;
+        }
+        .button.is-primary:hover {
+            background-color: #3ec46d;
+            box-shadow: 0 0 10px #48c774;
+        }
+
+        /* Flash Messages */
+        .notification { margin-bottom: 20px; }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar" role="navigation" aria-label="main navigation">
+        <div class="container">
+            <div class="navbar-brand">
+                <a class="navbar-item" href="/">
+                    <span class="icon is-medium has-text-primary">
+                        <i class="fas fa-shield-alt fa-lg"></i>
+                    </span>
+                    <span style="font-weight: bold; font-size: 1.2rem; margin-left: 10px;">SecureMail</span>
+                </a>
+            </div>
+
+            <div class="navbar-menu">
+                <div class="navbar-end">
+                    {% if current_user.is_authenticated %}
+                        <a href="#" class="navbar-item">Skrzynka</a>
+                       <a href="{{ url_for('auth.settings') }}" class="navbar-item">
+                            <span class="icon"><i class="fas fa-cog"></i></span>
+                            <span>Ustawienia</span>
+                        </a>
+                        <a href="{{ url_for('auth.logout') }}" class="navbar-item has-text-danger">Wyloguj</a>
+                    {% else %}
+                        <a href="{{ url_for('auth.login') }}" class="navbar-item">Logowanie</a>
+                        <a href="{{ url_for('auth.register') }}" class="navbar-item">Rejestracja</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section class="section">
+        <div class="container">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="notification is-{{ 'danger' if category == 'error' else 'success' }}">
+                            <button class="delete" onclick="this.parentElement.style.display='none'"></button>
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            {% block content %}
+            {% endblock %}
+        </div>
+    </section>
+</body>
+</html>

@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  # Baza danych MSSQL
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: mssql_db
+    restart: always
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - sql_data:/var/opt/mssql
+    ports:
+      - "1433:1433" # laczenie z ssms
+
+  # Aplikacja FLASK
+  web:
+    build: ./app
+    container_name: flask_app
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      - db
+
+  # PROXY 
+  nginx:
+    build: ./nginx
+    container_name: nginx_proxy
+    restart: always
+    ports:
+      - "443:443" # HTTPS
+      - "80:80"   # HTTP do przekierowania na https 
+    depends_on:
+      - web
+
+volumes:
+  sql_data:

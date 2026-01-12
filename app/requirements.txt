@@ -1,0 +1,12 @@
+Flask
+Flask-SQLAlchemy
+Flask-Limiter
+Flask-WTF
+pyodbc
+cryptography
+pyotp
+qrcode
+Flask-Login
+Flask-Mail
+argon2-cffi
+Pillow

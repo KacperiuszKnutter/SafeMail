@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="columns is-centered">
+    <div class="column is-8">
+        <h1 class="title">Ustawienia Konta</h1>
+        
+        <div class="box">
+            <h2 class="subtitle">Bezpieczeństwo</h2>
+            
+            <div class="level">
+                <div class="level-left">
+                    <div>
+                        <p class="heading">Dwuetapowa weryfikacja (2FA)</p>
+                        <p class="title is-5">
+                            {% if current_user.is_2fa_enabled %}
+                                <span class="has-text-success"><i class="fas fa-check-circle"></i> Aktywna</span>
+                            {% else %}
+                                <span class="has-text-danger"><i class="fas fa-times-circle"></i> Nieaktywna</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+                <div class="level-right">
+                    {% if not current_user.is_2fa_enabled %}
+                        <a href="{{ url_for('auth.enable_2fa') }}" class="button is-primary">
+                            <span class="icon"><i class="fas fa-shield-alt"></i></span>
+                            <span>Włącz 2FA</span>
+                        </a>
+                    {% else %}
+                        <form action="{{ url_for('auth.disable_2fa') }}" method="POST">
+                            <button class="button is-danger is-outlined" title="Wyłącz zabezpieczenie">
+                                <span class="icon"><i class="fas fa-ban"></i></span>
+                                <span>Wyłącz 2FA</span>
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

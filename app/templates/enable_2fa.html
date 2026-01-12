@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="columns is-centered">
+    <div class="column is-6 has-text-centered">
+        <h3 class="title">Konfiguracja 2FA</h3>
+        <div class="box">
+            <p class="subtitle is-6">1. Zeskanuj ten kod w aplikacji Authenticator:</p>
+            
+            <figure class="image is-inline-block" style="background: white; padding: 10px; border-radius: 5px; margin-bottom: 20px;">
+                <img src="data:image/png;base64, {{ qr_code }}" alt="Kod QR 2FA" width="200">
+            </figure>
+            
+            <p class="subtitle is-6">2. Wpisz kod z aplikacji, aby potwierdzić:</p>
+            
+            <form method="POST">
+                {{ form.hidden_tag() }}
+                <div class="field is-grouped is-grouped-centered">
+                    <div class="control">
+                        {{ form.otp_token(class="input has-text-centered", placeholder="000 000", maxlength="6", autocomplete="one-time-code") }}
+                    </div>
+                    <div class="control">
+                        <button class="button is-primary">Aktywuj</button>
+                    </div>
+                </div>
+                {% for error in form.otp_token.errors %}
+                    <p class="help is-danger">{{ error }}</p>
+                {% endfor %}
+            </form>
+        </div>
+        <a href="{{ url_for('auth.settings') }}" class="button is-text">Anuluj</a>
+    </div>
+</div>
+{% endblock %}

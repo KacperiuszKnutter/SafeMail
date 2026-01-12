@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="columns is-centered">
+    <div class="column is-5-tablet is-4-desktop">
+        <h3 class="title has-text-centered">Utwórz konto</h3>
+        <div class="box">
+            <form method="POST" action="{{ url_for('auth.register') }}">
+                {{ form.hidden_tag() }}
+
+                <div class="field">
+                    <label class="label" for="{{ form.username.id }}">Adres Email</label>
+                    <div class="control has-icons-left">
+                        {{ form.username(class="input", placeholder="user@securemail.com", autocomplete="username") }}
+                        <span class="icon is-small is-left"><i class="fas fa-envelope"></i></span>
+                    </div>
+                    {% for error in form.username.errors %}
+                        <p class="help is-danger">{{ error }}</p>
+                    {% endfor %}
+                </div>
+
+                <div class="field">
+                    <label class="label" for="{{ form.password.id }}">Hasło</label>
+                    <div class="control has-icons-left has-icons-right">
+                        {{ form.password(class="input password-input", placeholder="Silne hasło", autocomplete="new-password") }}
+                        <span class="icon is-small is-left"><i class="fas fa-lock"></i></span>
+                        
+                        <span class="icon is-small is-right is-clickable toggle-password" style="pointer-events: auto; cursor: pointer;">
+                            <i class="fas fa-eye"></i>
+                        </span>
+                    </div>
+                    <p class="help has-text-grey-light is-size-7">
+                        8-24 znaków, duża i mała litera, cyfra, znak specjalny.
+                    </p>
+                    {% for error in form.password.errors %}
+                        <p class="help is-danger">{{ error }}</p>
+                    {% endfor %}
+                </div>
+
+                <div class="field">
+                    <label class="label" for="{{ form.confirm_password.id }}">Potwierdź hasło</label>
+                    <div class="control has-icons-left has-icons-right">
+                        {{ form.confirm_password(class="input password-input", placeholder="Powtórz hasło", autocomplete="new-password") }}
+                        <span class="icon is-small is-left"><i class="fas fa-lock"></i></span>
+                        
+                        <span class="icon is-small is-right is-clickable toggle-password" style="pointer-events: auto; cursor: pointer;">
+                            <i class="fas fa-eye"></i>
+                        </span>
+                    </div>
+                    {% for error in form.confirm_password.errors %}
+                        <p class="help is-danger">{{ error }}</p>
+                    {% endfor %}
+                </div>
+
+                <div class="field">
+                    <button class="button is-primary is-fullwidth is-medium">Zarejestruj się!</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!-- Skrypt do przełączania widoczności haseł js -->
+<script>
+    // Po załadowaniu DOMu dodajemy nasłuchiwanie kliknięć na ikony przełączania widoczności haseł
+    document.addEventListener('DOMContentLoaded', () => {
+        // Znajdź wszystkie elementy z klasą .toggle-password
+        const toggles = document.querySelectorAll('.toggle-password');
+        // Dodaj nasłuchiwanie kliknięć do każdej ikony
+        toggles.forEach(toggle => {
+            toggle.addEventListener('click', (e) => {
+                // Znajdź input w tym samym kontenerze (rodzicu)
+                const control = e.currentTarget.parentElement;
+                const input = control.querySelector('input');
+                const icon = e.currentTarget.querySelector('i');
+                // Przełącz typ inputa i ikonę
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                } else {
+                    input.type = 'password';
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="columns is-centered">
+    <div class="column is-5-tablet is-4-desktop">
+        <h3 class="title has-text-centered">Logowanie</h3>
+        <div class="box">
+            <form method="POST" action="{{ url_for('auth.login') }}">
+                {{ form.hidden_tag() }}
+
+                <div class="field">
+                    <label class="label" for="{{ form.username.id }}">Email</label>
+                    <div class="control has-icons-left">
+                        {{ form.username(class="input", placeholder="Twój email", autocomplete="username") }}
+                        <span class="icon is-small is-left"><i class="fas fa-user"></i></span>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="label" for="{{ form.password.id }}">Hasło</label>
+                    <div class="control has-icons-left">
+                        {{ form.password(class="input", placeholder="Twoje hasło", autocomplete="current-password") }}
+                        <span class="icon is-small is-left"><i class="fas fa-lock"></i></span>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <a href="{{ url_for('auth.reset_passwd_request') }}" class="is-size-7 has-text-primary">Zapomniałeś hasła?</a>
+                </div>
+
+                <button class="button is-primary is-fullwidth is-medium">Dalej</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
