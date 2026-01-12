@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="columns is-centered">
+    <div class="column is-8">
+        <h1 class="title">Nowa Wiadomość</h1>
+        <div class="box">
+            <form method="POST" enctype="multipart/form-data">
+                {{ form.hidden_tag() }}
+
+                <div class="field">
+                    <label class="label">Do (Email)</label>
+                    <div class="control has-icons-left">
+                        {{ form.recipient(class="input", placeholder="odbiorca@example.com") }}
+                        <span class="icon is-small is-left"><i class="fas fa-user"></i></span>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="label">Temat</label>
+                    <div class="control">
+                        {{ form.subject(class="input", placeholder="Temat wiadomości") }}
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="label">Treść</label>
+                    <div class="control">
+                        <textarea class="textarea" name="content" rows="10" placeholder="Twoja bezpieczna wiadomość..."></textarea>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="label">Załącznik (Opcjonalnie)</label>
+                    <div class="file has-name is-fullwidth">
+                        <label class="file-label">
+                            {{ form.attachment(class="file-input") }}
+                            <span class="file-cta">
+                                <span class="file-icon"><i class="fas fa-upload"></i></span>
+                                <span class="file-label">Wybierz plik...</span>
+                            </span>
+                            <span class="file-name" id="filename-display">Nie wybrano pliku</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="field mt-5">
+                    <button class="button is-primary is-medium is-fullwidth">
+                        <span class="icon"><i class="fas fa-paper-plane"></i></span>
+                        <span>Wyślij</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Skrypt poprawiający UX przy wyborze pliku
+    const fileInput = document.querySelector('.file-input');
+    const fileName = document.querySelector('#filename-display');
+    // Gdy użytkownik wybierze plik (zdarzenie onchange)
+    fileInput.onchange = () => {
+        if (fileInput.files.length > 0) {
+            // ...pobierz jego nazwę i wstaw do elementu span
+            fileName.textContent = fileInput.files[0].name;
+        }
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="columns is-centered">
+    <div class="column is-8">
+        <div class="mb-4">
+            <a href="{{ url_for('message.inbox') }}" class="button is-text">
+                <span class="icon"><i class="fas fa-arrow-left"></i></span>
+                <span>Powrót do skrzynki</span>
+            </a>
+        </div>
+
+        {% if signature_valid is not none %}
+            {% if signature_valid %}
+                <div class="notification is-success is-light">
+                    <span class="icon"><i class="fas fa-check-circle"></i></span>
+                    <strong>Weryfikacja Pomyślna:</strong> Wiadomość jest autentyczna i została podpisana przez <b>{{ msg.sender.username }}</b>.
+                </div>
+            {% else %}
+                <div class="notification is-danger">
+                    <span class="icon"><i class="fas fa-exclamation-triangle"></i></span>
+                    <strong>OSTRZEŻENIE BEZPIECZEŃSTWA:</strong> Podpis cyfrowy jest NIEPRAWIDŁOWY! Wiadomość mogła zostać sfałszowana.
+                </div>
+            {% endif %}
+        {% endif %}
+
+        <div class="box">
+            <h2 class="title is-4">{{ msg.subject }}</h2>
+            <div class="level is-mobile has-text-grey is-size-7 mb-4">
+                <div class="level-left">
+                    <div>
+                        <p><strong>Od:</strong> {{ msg.sender.username }}</p>
+                        <p><strong>Data:</strong> {{ msg.timestamp.strftime('%Y-%m-%d %H:%M') }}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <hr>
+
+            <div class="content">
+                {% if content %}
+                    <p style="white-space: pre-wrap;">{{ content }}</p>
+                {% elif error %}
+                    <div class="notification is-warning">
+                        Nie udało się odszyfrować wiadomości. Upewnij się, że masz poprawny klucz prywatny.
+                    </div>
+                {% else %}
+                    <div class="notification is-info is-light">
+                        To jest wiadomość zaszyfrowana, którą wysłałeś. Ze względów bezpieczeństwa (szyfrowanie kluczem odbiorcy), nie możesz jej odszyfrować.
+                    </div>
+                {% endif %}
+            </div>
+
+            {% if msg.attachments %}
+            <hr>
+            <h4 class="subtitle is-6">Załączniki:</h4>
+            {% for att in msg.attachments %}
+                <a href="{{ url_for('message.download_attachment', attachment_id=att.id) }}" class="button is-small is-link is-light">
+                    <span class="icon"><i class="fas fa-download"></i></span>
+                    <span>Pobierz: {{ att.filename }}</span>
+                </a>
+            {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

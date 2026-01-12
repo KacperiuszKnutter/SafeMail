@@ -15,6 +15,8 @@ from datetime import timedelta
 from models import DATABASE, User
 # Importujemy blueprint z pliku auth_routes.py, aby zarejestrować go w aplikacji i mieć dostęp do tras rejestracji i logowania itd.
 from auth_routes import auth_bp 
+# Importujemy blueprint z pliku message_routes.py, aby zarejestrować go w aplikacji i mieć dostęp do tras związanych z wiadomościami
+from message_routes import message_bp
 
 def get_env_variable(name):
     # Pobiera zmienną środowiskową lub zgłasza wyjątek, jeśli nie istnieje
@@ -62,7 +64,9 @@ def create_app():
     username = os.getenv('DB_USER')
     password = os.getenv('DB_PASSWORD')
     secret_key = get_env_variable('FLASK_SECRET_KEY')
-    
+
+    #do załączników
+    app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
     # Baza danych start
     ensure_database_ready(server, username, password, db_name)
 
@@ -71,8 +75,8 @@ def create_app():
     app.config['SQLALCHEMY_DATABASE_URI'] = f"mssql+pyodbc://{username}:{password}@{server}:1433/{db_name}?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes"
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['SECRET_KEY'] = secret_key 
-    # Sesje użytkowników - czas trwania 1 minuta (dla testów)
-    app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=1)
+    # Sesje użytkowników - czas trwania 3 miunty
+    app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=3)
     
     # Konfiguracja Mail (Console Backend)
     app.config['MAIL_SERVER'] = 'smtp.googlemail.com'
@@ -106,7 +110,9 @@ def create_app():
     # registracja blueprintów
     # tutaj rejestrujemy blueprint auth_bp z auth_routes.py
     # to pozwala na modularne zarządzanie trasami związanymi z uwierzytelnianiem
-    app.register_blueprint(auth_bp) 
+    app.register_blueprint(auth_bp)
+    # tutaj rejestrujemy blueprint message_bp z message_routes.py 
+    app.register_blueprint(message_bp)
     # Tworzenie tabel w bazie danych (jeśli nie istnieją)
     with app.app_context():
         DATABASE.create_all()
@@ -117,13 +123,41 @@ def create_app():
         # Strona główna
         return render_template('base.html')
 
+    @app.after_request
+    def set_security_headers(response):
+        # Ustawianie nagłówków bezpieczeństwa
+        # default-src 'self': domyślnie ładuj wszystko tylko z naszego serwera
+        # script-src: zezwalamy na nasze skrypty, 'unsafe-inline' (dla skryptu togglowania hasła w HTML) i cdnjs (Bulma/FontAwesome)
+        # style-src: zezwalamy na style nasze, inline i z cdnjs oraz google fonts
+        # font-src: zezwalamy na czcionki z cdnjs i google fonts
+        # img-src: zezwalamay na obrazki nasze i dane base64 (kod QR)
+        csp = (
+            "default-src 'self'; "
+            "script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; "
+            "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; "
+            "font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com; "
+            "img-src 'self' data:;"
+        )
+        response.headers['Content-Security-Policy'] = csp
+        # Dodatkowe nagłówki bezpieczeństwa
+        # Zapobiega MIME-type sniffing (wykrywanie typu pliku przez przeglądarkę na podstawie zawartości, żeby uniknąć ataków XSS)
+        response.headers['X-Content-Type-Options'] = 'nosniff'
+        # Zapobiega klikania w ramkach (clickjacking, ochrona przed osadzaniem w iframe z innej domeny)
+        response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+        # Włącza ochronę przed XSS w przeglądarkach
+        response.headers['X-XSS-Protection'] = '1; mode=block'
+        return response
+
     return app
+
+    
+        
 
 if __name__ == '__main__':
     try:
         app = create_app()
         # Uruchomienie serwera deweloperskiego host 0.0.0.0 pozwala na dostęp z zewnątrz kontenera
         # tylko do celów deweloperskich na produkcje NIE (debug=True tylko na potrzeby testów potem zmienić na False)
-        app.run(host='0.0.0.0', port=8000, debug=True)
+        app.run(host='0.0.0.0', port=8000, debug=False)
     except Exception as e:
         print(f"Błąd krytyczny startu: {e}")

@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="columns is-centered">
+    <div class="column is-10">
+        <div class="level">
+            <div class="level-left">
+                <h1 class="title">Skrzynka Odbiorcza</h1>
+            </div>
+            <div class="level-right">
+                <a href="{{ url_for('message.compose') }}" class="button is-primary">
+                    <span class="icon"><i class="fas fa-pen"></i></span>
+                    <span>Nowa Wiadomość</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="box">
+            {% if messages %}
+            <table class="table is-fullwidth is-hoverable">
+                <thead>
+                    <tr>
+                        <th>Status</th>
+                        <th>Od</th>
+                        <th>Temat</th>
+                        <th>Data</th>
+                        <th>Akcja</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for msg in messages %}
+                    <tr class="clickable-row {{ 'has-text-weight-bold' if not msg.is_read else '' }}" 
+                        data-href="{{ url_for('message.view_message', message_id=msg.id) }}"
+                        style="cursor: pointer;">
+                        <td>
+                            <span class="icon">
+                                {% if msg.is_read %}
+                                    <i class="far fa-envelope-open has-text-grey"></i>
+                                {% else %}
+                                    <i class="fas fa-envelope has-text-primary"></i>
+                                {% endif %}
+                            </span>
+                        </td>
+                        <td>{{ msg.sender.username }}</td>
+                        <td>
+                            {{ msg.subject }}
+                            {% if msg.attachments %}
+                                <span class="icon is-small has-text-grey"><i class="fas fa-paperclip"></i></span>
+                            {% endif %}
+                        </td>
+                        <td>{{ msg.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>
+                            <form action="{{ url_for('message.delete_message', message_id=msg.id) }}" method="POST" class="delete-form">
+                                <button class="button is-small is-danger is-outlined delete-btn" title="Usuń" type="submit">
+                                    <span class="icon"><i class="fas fa-trash"></i></span>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="has-text-centered py-6">
+                <span class="icon is-large has-text-grey-light"><i class="fas fa-inbox fa-3x"></i></span>
+                <p class="subtitle mt-3">Twoja skrzynka jest pusta.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    //js 
+    // Uruchom kod dopiero gdy cały HTML zostanie załadowany (DOMContentLoaded)
+    document.addEventListener('DOMContentLoaded', () => {
+        // Znajdź wszystkie wiersze z klasą clickable-row czyli te co maja dzialac jak link
+        const rows = document.querySelectorAll('.clickable-row');
+
+        rows.forEach(row => {
+            row.addEventListener('click', (e) => {
+                // Jeśli kliknięto wewnątrz formularza usuwania lub przycisk usuwania, nie otwieraj wiadomości
+                if (e.target.closest('.delete-form') || e.target.closest('.delete-btn')) {
+                    return;
+                }
+                // Przekieruj do adresu z data-href jeśli klinięto
+                window.location.href = row.dataset.href;
+            });
+        });
+    });
+</script>
+{% endblock %}

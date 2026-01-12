@@ -67,17 +67,44 @@ class Message(db.Model):
         #tu wiążemy z user.id z tabelą users
     sender_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     recipient_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-        #  Wiadomość zaszyfrowana kluczem publicznym odbiorcy, pole jako tekst a nie string bo może być długie
-        # to bedzie odpowiednik nvarchar(max) w SQL Server
+    # Temat wiadomości 
+    subject = db.Column(db.String(255), default="(Brak tematu)")
+    # Zaszyfrowana symetrycznie (AES/Fernet) przy użyciu losowego Klucza Sesji
     encrypted_content = db.Column(db.Text, nullable=False)
-        # Losowy klucz sesyjny zaszyfrowany kluczem publicznym odbiorcy (RSA)
+        #Klucz Sesji zaszyfrowany asymetrycznie (RSA) Kluczem Publicznym Odbiorcy
+    # dzięki temu tylko Odbiorca (mający Klucz Prywatny) odczyta Klucz Sesji, a nim Treść.
     encrypted_aes_key = db.Column(db.Text, nullable=False)
-        # Podpis cyfrowy wiadomości
+        # Podpis cyfrowy wiadomości, pozwala odbiorcy zweryfikować autentyczność i integralność wiadomości
     signature = db.Column(db.Text, nullable=False)
         #data i czas wysłania wiadomości, przydatne do sortowania po dacie
     timestamp = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
         # czy wiadomość została odczytana
     is_read = db.Column(db.Boolean, default=False)
+
+    # Relacja do tabeli załączników
+    attachments = db.relationship('Attachment', backref='message', lazy=True, cascade="all, delete-orphan")
+
+class Attachment(db.Model):
+    __tablename__ = 'attachments'
+    # Załączniki do wiadomości
+
+    id = db.Column(db.Integer, primary_key=True)
+    # Powiązanie z wiadomością
+    message_id = db.Column(db.Integer, db.ForeignKey('messages.id'), nullable=False)
+    
+    # Nazwa pliku oryginalna 
+    filename = db.Column(db.String(255), nullable=False)
+    
+    # Typ pliku po stronie MIME (np. application/pdf, image/png)
+    content_type = db.Column(db.String(100), nullable=False)
+    
+    # Zawartość pliku: Zaszyfrowana tym samym Kluczem Sesji co wiadomość
+    # LargeBinary (na surowo) do przechowywania plików
+    encrypted_data = db.Column(db.LargeBinary, nullable=False)
+    
+    # Rozmiar pliku 
+    file_size = db.Column(db.Integer, nullable=False)
+
 
 class LoginAttempt(db.Model):
     # Tabela audytowa do śledzenia prób logowania (obsoletna, ale może być przydatna)

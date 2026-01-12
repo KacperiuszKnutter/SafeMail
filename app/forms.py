@@ -1,4 +1,5 @@
 from flask_wtf import FlaskForm
+from flask_wtf.file import FileField, FileAllowed
 # Import pól formularza (tekstowe, hasło, przycisk)
 from wtforms import StringField, PasswordField, SubmitField
 # Import walidatorów (wymagane pole, długość, zgodność haseł, wyrażenia regularne)
@@ -8,6 +9,7 @@ from wtforms.validators import DataRequired, Length, EqualTo, Regexp
 class RegisterForm(FlaskForm):
     # Pole na adres email z walidacją , pole nie może być puste, długość od 4 do 100 znaków, poprawny format email
     # regex do sprawdzenia poprawności formatu email inspiracja ze stackoverflow
+    # odrzucamy np. znaki <>(),;:\\"[] oraz spacje żeby unikać wstrzykiwania skryptów
     username = StringField('Adres Email', validators=[DataRequired(message="Email jest wymagany"),Length(min=4, max=100),
         Regexp(r'^[\w\.-]+@[\w\.-]+\.\w+$', message=f"Email niepoprawny, adres email powinien wyglądać następująco: user@example.com")
     ])
@@ -30,7 +32,11 @@ class RegisterForm(FlaskForm):
 
 class LoginForm(FlaskForm):
     # Prosty formularz logowania bez skomplikowanej walidacji regex (sprawdzamy tylko obecność danych)
-    username = StringField('Email', validators=[DataRequired()])
+    username = StringField('Email', validators=[
+        DataRequired(),
+        Length(min=4, max=100),
+        Regexp(r'^[\w\.-]+@[\w\.-]+\.\w+$', message="Niepoprawny format adresu email")
+    ])
     password = PasswordField('Hasło', validators=[DataRequired()])
     submit = SubmitField('Zaloguj')
 
@@ -73,3 +79,20 @@ class ResetPasswordForm(FlaskForm):
     ])
 
     submit = SubmitField('Zmień hasło')
+
+class CreateMessageForm(FlaskForm):
+    # formularz do tworzenia wiadomości
+    recipient = StringField('Adres Email odbiorcy', validators=[DataRequired(message="Podaj adres email odbiorcy"),Length(min=4, max=100),
+        Regexp(r'^[\w\.-]+@[\w\.-]+\.\w+$', message=f"Email niepoprawny, adres email powinien wyglądać następująco: user@example.com")])
+    
+    subject = StringField('Temat wiadomości', validators=[DataRequired(message="Podaj temat wiadomości"), Length(min=1, max=150)])
+
+    content = StringField('Treść wiadomości', widget=sqlalchemy.util.NoneType if False else None, render_kw={"class": "textarea", "rows": 10}, validators=[
+        DataRequired(),
+        Regexp(r'^',message ="Umieszczanie skryptów w treści wiadomości jest zabronione")
+    ])
+    attachment = FileField('Załącznik', validators=[
+        FileAllowed(['jpg', 'png', 'pdf', 'txt', 'docx', 'zip'], 'Niedozwolony typ pliku!')
+    ])
+
+    submit = SubmitField('Wyślij wiadomość')

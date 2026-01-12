@@ -7,12 +7,16 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.3/css/bulma.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <style>
-        /* Modernistyczny Dark Mode dla SecureMail */
+        /* Modernistyczny Dark Mode dla SecureMail nadpisujące Bulmę */
+        /* Tło całej strony i kolor tekstu */
         body, html { background-color: #121212; color: #e0e0e0; height: 100%; }
+        /* Pasek nawigacji - ciemnoszary z dolną ramką */
         .navbar { background-color: #1f1f1f; border-bottom: 1px solid #333; }
         .navbar-item, .navbar-link { color: #e0e0e0; }
+        /* Efekt najechania myszką na linki w menu (zmienia tło na jaśniejsze i tekst na zielony)*/
         .navbar-item:hover { background-color: #333 !important; color: #48c774 !important; }
         
+        /* inne style nagłówków i pól tekstowych*/
         .box {
             background-color: #1f1f1f;
             border: 1px solid #333;
@@ -63,7 +67,7 @@
             <div class="navbar-menu">
                 <div class="navbar-end">
                     {% if current_user.is_authenticated %}
-                        <a href="#" class="navbar-item">Skrzynka</a>
+                        <a href="{{ url_for('message.inbox') }}" class="navbar-item">Skrzynka</a>
                        <a href="{{ url_for('auth.settings') }}" class="navbar-item">
                             <span class="icon"><i class="fas fa-cog"></i></span>
                             <span>Ustawienia</span>

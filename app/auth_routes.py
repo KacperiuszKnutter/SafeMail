@@ -72,11 +72,11 @@ def check_inactivity():
 
             delta = present_time - last_active_time
 
-            # Jeśli minęło więcej niż 60 sekund -> wyloguj
-            if delta.total_seconds() > 60:
+            # Jeśli minęło więcej niż 60 sekund (3 minuty) -> wyloguj
+            if delta.total_seconds() > 180:
                 logout_user()
                 session.clear()
-                flash("Zostałeś wylogowany z powodu braku aktywności przez 1 minutę.", "info")
+                flash("Zostałeś wylogowany z powodu braku aktywności!.", "info")
                 return redirect(url_for('auth.login'))
         # Aktualizacja czasu ostatniej aktywności
         session['last_active'] = present_time
@@ -160,6 +160,12 @@ def login():
                     is_valid = False
 
                 if is_valid:
+                    # generujemy klucz pochodny do sesji z hasła i soli
+                    # będzie tym samym kluczem do szyfrowania klucza prywatnego RSA
+                    derived_key = crypto_manager.generate_key_from_password(form.password.data, user.salt)
+                    # zaoisujemy jako string klucz pochodny w sesji 
+                    session['decryption_key'] = derived_key.decode('utf-8')
+
                     # Resetujemy liczniki błędów i blokadę, bo użytkownik wszedł poprawnie
                     user.failed_login_attempts = 0
                     user.locked_until = None
@@ -233,6 +239,7 @@ def login_2fa():
                 login_user(user)
                 session.pop('pre_2fa_user_id', None) # Czyszczenie sesji tymczasowej
                 session['last_active'] = datetime.now(timezone.utc)
+
                 # Logujemy udane logowanie
                 DATABASE.session.add(LoginAttempt(user_id=user.id, ip_address=get_remote_address(), successful=True))
                 DATABASE.session.commit()
@@ -385,6 +392,12 @@ def reset_passwd(token):
         user.public_key = pem_public.decode('utf-8')
         user.encrypted_private_key = encrypted_priv
         
+        # generujemy klucz pochodny do sesji z hasła i soli
+        # będzie tym samym kluczem do szyfrowania klucza prywatnego RSA
+        derived_key = crypto_manager.generate_key_from_password(form.password.data, user.salt)
+        # zaoisujemy jako string klucz pochodny w sesji 
+        session['decryption_key'] = derived_key.decode('utf-8')
+
         # czyścimy blokady i nieudane próby
         user.locked_until = None
         user.failed_login_attempts = 0

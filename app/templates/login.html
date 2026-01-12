@@ -6,6 +6,7 @@
         <h3 class="title has-text-centered">Logowanie</h3>
         <div class="box">
             <form method="POST" action="{{ url_for('auth.login') }}">
+                <!-- Ukryte pole CSRF z żetonem dla tej sesji i tego formularza -->
                 {{ form.hidden_tag() }}
 
                 <div class="field">
