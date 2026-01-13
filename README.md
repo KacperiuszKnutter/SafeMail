@@ -17,32 +17,7 @@ Aplikacja składa się z następujących modułów współpracujących ze sobą:
 3.  **Baza Danych (MS SQL Server)**: Przechowuje zaszyfrowane dane użytkowników i wiadomości. Działa w kontenerze Docker.
 4.  **Reverse Proxy (Nginx)**: Obsługuje ruch przychodzący, terminację SSL/TLS i przekazuje go do aplikacji Flask.
 
-## 🔐 Szczegóły Kryptograficzne i Model Bezpieczeństwa
-
-Aplikacja implementuje architekturę **Zero-Knowledge** (brak wiedzy serwera). Oznacza to, że administrator bazy danych nie jest w stanie odczytać wiadomości użytkowników, ponieważ nie posiada kluczy deszyfrujących (są one chronione hasłami użytkowników).
-
-### 1. Szyfrowanie Wiadomości (Model Hybrydowy - "Cyfrowa Koperta")
-Ze względu na wydajność i ograniczenia rozmiaru danych w kryptografii asymetrycznej (RSA), stosujemy model hybrydowy (podobny do PGP/GPG):
-
-* **Proces Wysyłania:**
-    1.  Generowany jest jednorazowy, losowy **Klucz Sesji (AES-256)**.
-    2.  Treść wiadomości i załączniki są szyfrowane tym **Kluczem Sesji**.
-    3.  **Klucz Sesji** jest szyfrowany asymetrycznie **Kluczem Publicznym Odbiorcy** (RSA-2048).
-    4.  Tworzony jest **Podpis Cyfrowy**: Skrót (Hash) wiadomości jest szyfrowany **Kluczem Prywatnym Nadawcy**.
-* **Proces Odbierania:**
-    1.  Odbiorca używa swojego Klucza Prywatnego, aby odszyfrować Klucz Sesji.
-    2.  Kluczem Sesji odszyfrowuje treść i pliki.
-    3.  Weryfikuje Podpis Cyfrowy używając Klucza Publicznego Nadawcy, aby potwierdzić autentyczność i integralność.
-
-### 2. Zarządzanie Kluczami i Sekretami
-Klucze są przechowywane i zarządzane w sposób minimalizujący ryzyko wycieku:
-
-* **Klucz Prywatny RSA**: Jest generowany podczas rejestracji, ale **nigdy** nie jest zapisywany w bazie jawnym tekstem. Jest on szyfrowany symetrycznie (AES) kluczem pochodnym wygenerowanym z hasła użytkownika i losowej soli (PBKDF2HMAC). W bazie znajduje się tylko `encrypted_private_key`.
-* **Klucz Publiczny RSA**: Przechowywany jawnie, dostępny dla każdego nadawcy.
-* **Hasła Użytkowników**: Haszowane algorytmem **Argon2id** (odpornym na ataki GPU/ASIC) z unikalną solą.
-* **Pamięć RAM (Sesja)**: Podczas logowania, z hasła użytkownika generowany jest `derived_key` (klucz pochodny). Tylko ten klucz trafia do sesji serwera. Oryginalne hasło jest usuwane z pamięci natychmiast po weryfikacji. Dzięki temu, nawet przy przejęciu sesji, atakujący nie poznaje hasła źródłowego.
-
-### 3. Dlaczego to jest bezpieczne?
+### Dlaczego to jest bezpieczne?
 * **Poufność**: Tylko posiadacz klucza prywatnego (odbiorca znający swoje hasło) może otworzyć "cyfrową kopertę".
 * **Autentyczność**: Podpis cyfrowy gwarantuje, że nadawca jest tym, za kogo się podaje.
 * **Integralność**: Każda zmiana zaszyfrowanej treści przez osobę trzecią spowoduje błąd weryfikacji podpisu.
